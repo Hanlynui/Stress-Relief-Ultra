@@ -1,4 +1,3 @@
-// Import the required modules
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -25,6 +24,8 @@ const Model3D = () => {
     // Create the renderer and set its size
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    //set pixel ratio so that it looks better
+    renderer.setPixelRatio(2);
 
     //todo
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -45,12 +46,12 @@ const Model3D = () => {
     spinnerScene.add(ambientLight);
 
     // Top directional light
-    const topDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const topDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     topDirectionalLight.position.set(0, 1, 0);
     spinnerScene.add(topDirectionalLight);
 
     // Bottom directional light
-    const bottomDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const bottomDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     bottomDirectionalLight.position.set(0, -1, 0);
     spinnerScene.add(bottomDirectionalLight);
 
@@ -96,24 +97,81 @@ const Model3D = () => {
     const controls = new OrbitControls(camera, renderer.domElement);
     //enable dampening
     controls.enableDamping = true;
+    controls.enableZoom = false;
+
+    const velocity = new THREE.Vector2(0, 0);
+
+    let prevMousePosition = { x: 0, y: 0 };
+    let curMousePosition = { x: 0, y: 0 };
+    let isMouseDown = false;
+
+    renderer.domElement.addEventListener("mousedown", () => {
+      isMouseDown = true;
+    });
+
+    renderer.domElement.addEventListener("mousemove", (event) => {
+      if (isMouseDown) {
+        prevMousePosition.x = curMousePosition.x;
+        prevMousePosition.y = curMousePosition.y;
+
+        curMousePosition.x = event.clientX;
+        curMousePosition.y = event.clientY;
+
+        velocity.x = curMousePosition.x - prevMousePosition.x;
+        velocity.y = curMousePosition.y - prevMousePosition.y;
+      }
+    });
+
+    renderer.domElement.addEventListener("touchmove", (event) => {
+      if (isMouseDown) {
+        prevMousePosition.x = curMousePosition.x;
+        prevMousePosition.y = curMousePosition.y;
+
+        curMousePosition.x = event.touches[0].clientX;
+        curMousePosition.y = event.touches[0].clientY;
+
+        velocity.x = curMousePosition.x - prevMousePosition.x;
+        velocity.y = curMousePosition.y - prevMousePosition.y;
+      }
+      event.preventDefault();
+    });
+
+    renderer.domElement.addEventListener("mouseup", () => {
+      isMouseDown = false;
+    });
+
+    renderer.domElement.addEventListener("touchstart", () => {
+      isMouseDown = true;
+    });
+
+    renderer.domElement.addEventListener("touchend", () => {
+      isMouseDown = false;
+    });
 
     // Define the animation loop
     const animate = () => {
       requestAnimationFrame(animate);
 
+      const model = spinnerScene.children.find(
+        (child) => child.type === "Group"
+      );
+
+      if (model) {
+        model.rotation.y += velocity.x * 0.001;
+        model.rotation.x += velocity.y * 0.001;
+      }
+
+      // Reduce the velocity over time
+      velocity.multiplyScalar(0.999);
+
       // Update the controls
       controls.update();
 
-      // Update the sky camera position to match the model camera
-      skyCamera.position.copy(camera.position);
-      skyCamera.updateMatrixWorld();
-
-      // Auto-rotate the sky camera
-      skyCamera.rotation.y += skyCameraRotationSpeed;
-      skyCamera.rotation.x += skyCameraRotationSpeed;
-
       // Render the skyScene using the skyCamera
       renderer.render(skyScene, skyCamera);
+
+      skyCamera.rotation.y += skyCameraRotationSpeed;
+      skyCamera.rotation.x += skyCameraRotationSpeed;
 
       // Render the spinnerScene using the model camera on top of the skyScene
       renderer.autoClear = false;
