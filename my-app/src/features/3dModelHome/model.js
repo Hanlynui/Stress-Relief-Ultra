@@ -11,13 +11,16 @@ const Model3D = () => {
 
   // This effect runs once when the component mounts
   useEffect(() => {
-    // Create a new scene
-    const scene = new THREE.Scene();
+    // Create a new spinnerScene
+    const skyScene = new THREE.Scene();
+    const spinnerScene = new THREE.Scene();
 
-    // Set up the camera
+    // set up camera
     const camera = new THREE.PerspectiveCamera(30, 1, 1, 100);
     camera.position.z = 3;
-    scene.add(camera);
+    // spinnerScene.add(camera);
+
+    const skyCamera = new THREE.PerspectiveCamera(30, 1, 1, 100);
 
     // Create the renderer and set its size
     const renderer = new THREE.WebGLRenderer();
@@ -30,55 +33,54 @@ const Model3D = () => {
     const exrLoader = new EXRLoader();
     exrLoader.load("/skymap.exr", (texture) => {
       const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-      scene.background = envMap;
-      scene.environment = envMap;
+      skyScene.background = envMap;
+      spinnerScene.environment = envMap;
 
       texture.dispose();
       pmremGenerator.dispose();
     });
 
-    // Add ambient light to the scene
+    // Add ambient light to the spinnerScene
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(ambientLight);
+    spinnerScene.add(ambientLight);
 
     // Top directional light
     const topDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
     topDirectionalLight.position.set(0, 1, 0);
-    scene.add(topDirectionalLight);
+    spinnerScene.add(topDirectionalLight);
 
     // Bottom directional light
     const bottomDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
     bottomDirectionalLight.position.set(0, -1, 0);
-    scene.add(bottomDirectionalLight);
+    spinnerScene.add(bottomDirectionalLight);
 
     // Left directional light
     const leftDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
     leftDirectionalLight.position.set(-1, 0, 0);
-    scene.add(leftDirectionalLight);
+    spinnerScene.add(leftDirectionalLight);
 
     // Right directional light
     const rightDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
     rightDirectionalLight.position.set(1, 0, 0);
-    scene.add(rightDirectionalLight);
+    spinnerScene.add(rightDirectionalLight);
 
     // Front directional light
     const frontDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
     frontDirectionalLight.position.set(0, 0, 1);
-    scene.add(frontDirectionalLight);
+    spinnerScene.add(frontDirectionalLight);
 
     // Back directional light
     const backDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
-
     backDirectionalLight.position.set(0, 0, -1);
-    scene.add(backDirectionalLight);
+    spinnerScene.add(backDirectionalLight);
 
     // Load the GLTF model
     const loader = new GLTFLoader();
     loader.load(
       "/fidgetSpinner/scene.gltf",
       (gltf) => {
-        // Add the loaded model to the scene
-        scene.add(gltf.scene);
+        // Add the loaded model to the spinnerScene
+        spinnerScene.add(gltf.scene);
       },
       (xhr) => {
         // Log the loading progress
@@ -89,7 +91,7 @@ const Model3D = () => {
         console.error("An error happened", error);
       }
     );
-
+    const skyCameraRotationSpeed = 0.0001;
     // Add OrbitControls for user interaction with the model
     const controls = new OrbitControls(camera, renderer.domElement);
     //enable dampening
@@ -102,8 +104,21 @@ const Model3D = () => {
       // Update the controls
       controls.update();
 
-      // Render the scene
-      renderer.render(scene, camera);
+      // Update the sky camera position to match the model camera
+      skyCamera.position.copy(camera.position);
+      skyCamera.updateMatrixWorld();
+
+      // Auto-rotate the sky camera
+      skyCamera.rotation.y += skyCameraRotationSpeed;
+      skyCamera.rotation.x += skyCameraRotationSpeed;
+
+      // Render the skyScene using the skyCamera
+      renderer.render(skyScene, skyCamera);
+
+      // Render the spinnerScene using the model camera on top of the skyScene
+      renderer.autoClear = false;
+      renderer.render(spinnerScene, camera);
+      renderer.autoClear = true;
     };
 
     // Add the renderer's DOM element to the container and start the animation loop
