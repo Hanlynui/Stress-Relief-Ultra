@@ -11,7 +11,6 @@ const Model3D = () => {
   const [spinSpeed, setSpinSpeed] = useState(0);
   const [topSpinSpeed, setTopSpinSpeed] = useState(0);
   const spinTimeRef = useRef(0);
-  const topSpinSpeedRef = useRef(0);
 
   // This effect runs once when the component mounts
   useEffect(() => {
@@ -193,7 +192,11 @@ const Model3D = () => {
       // Call the adjustVelocity function and get whether the spin speed is greater than the threshold
       const isSpinning = adjustVelocity(velocity);
 
+      //todo bug here why is it constantly changing when spin speed changes? its not saving into topspinspeed
+
       setSpinSpeed(velocity.length().toFixed(3));
+
+      // console.log(spinSpeed);
 
       if (model && isSpinning) {
         model.rotation.y += velocity.x * 0.001;
@@ -212,6 +215,7 @@ const Model3D = () => {
           setSpinTime(spinTimeRef.current.toFixed(1));
         }
       }
+
       // Update the controls
       controls.update();
 
@@ -241,10 +245,20 @@ const Model3D = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      // this apparently necessary or else updating state doesnt work
+      parseFloat(spinSpeed) > parseFloat(topSpinSpeed) &&
+      !(spinSpeed > 400)
+    ) {
+      setTopSpinSpeed(spinSpeed);
+    }
+  }, [spinSpeed, topSpinSpeed]);
+
   return (
     <div>
       <h1>My 3D Model</h1>
-      <div>Total Spin Time Spent Spinning Today: {spinTime} seconds </div>
+      <div>Stress Relief Time Today: {spinTime} seconds </div>
       <div>Current Spin Speed: {spinSpeed}</div>
       <div>Top Spin Speed Today: {topSpinSpeed}</div>
       <div ref={containerRef} />
