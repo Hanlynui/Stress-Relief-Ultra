@@ -3,6 +3,13 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
+import {
+  Color,
+  CubeTexture,
+  LinearFilter,
+  RGBAFormat,
+  DataTexture,
+} from "three";
 
 const Model3D = () => {
   // Create a reference to the container element in the DOM
@@ -12,19 +19,22 @@ const Model3D = () => {
   const [topSpinSpeed, setTopSpinSpeed] = useState(0);
   const spinTimeRef = useRef(0);
 
+  // ...
+
   // This effect runs once when the component mounts
   useEffect(() => {
     // Create a new spinnerScene
+
     const skyScene = new THREE.Scene();
     const spinnerScene = new THREE.Scene();
     const clock = new THREE.Clock();
 
     // set up camera
-    const camera = new THREE.PerspectiveCamera(30, 1, 1, 100);
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
     camera.position.z = 3;
     // spinnerScene.add(camera);
 
-    const skyCamera = new THREE.PerspectiveCamera(30, 1, 1, 100);
+    const skyCamera = new THREE.PerspectiveCamera(100, 1, 0.1, 1000);
 
     // Create the renderer and set its size
     const renderer = new THREE.WebGLRenderer();
@@ -36,54 +46,49 @@ const Model3D = () => {
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
 
-    // const exrLoader = new EXRLoader();
-    // exrLoader.load("/skymap.exr", (texture) => {
-    //   const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-    //   skyScene.background = envMap;
-    //   spinnerScene.environment = envMap;
+    const exrLoader = new EXRLoader();
+    exrLoader.load("/skymap.exr", (texture) => {
+      const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+      skyScene.background = envMap;
+      spinnerScene.environment = envMap;
 
-    //   texture.dispose();
-    //   pmremGenerator.dispose();
-    // });
+      texture.dispose();
+      pmremGenerator.dispose();
+    });
 
-    // Add ambient light to the spinnerScene
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    spinnerScene.add(ambientLight);
+    const createLights = (spinnerScene) => {
+      const pointLightPositions = [];
 
-    // Top directional light
-    const topDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-    topDirectionalLight.position.set(0, 1, 0);
-    spinnerScene.add(topDirectionalLight);
+      const radius = 3; // Set the radius of the circle
+      const numLights = 20; // Set the number of lights to create
+      const angleStep = (2 * Math.PI) / numLights; // Calculate the angle between each light
 
-    // Bottom directional light
-    const bottomDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-    bottomDirectionalLight.position.set(0, -1, 0);
-    spinnerScene.add(bottomDirectionalLight);
+      for (let i = 0; i < numLights; i++) {
+        const x = radius * Math.cos(angleStep * i);
+        const y = radius * Math.sin(angleStep * i);
+        const z = 0; // Set the z position to 0 for a 2D circle
+        const position = new THREE.Vector3(x, y, z);
+        pointLightPositions.push(position);
+      }
 
-    // Left directional light
-    const leftDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-    leftDirectionalLight.position.set(-1, 0, 0);
-    spinnerScene.add(leftDirectionalLight);
+      pointLightPositions.forEach((position) => {
+        const pointLight = new THREE.PointLight(0xffffff, 0.2);
+        pointLight.position.copy(position);
+        spinnerScene.add(pointLight);
+      });
+    };
+    let counter = 0;
 
-    // Right directional light
-    const rightDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-    rightDirectionalLight.position.set(1, 0, 0);
-    spinnerScene.add(rightDirectionalLight);
-
-    // Front directional light
-    const frontDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-    frontDirectionalLight.position.set(0, 0, 1);
-    spinnerScene.add(frontDirectionalLight);
-
-    // Back directional light
-    const backDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-    backDirectionalLight.position.set(0, 0, -1);
-    spinnerScene.add(backDirectionalLight);
+    if (!counter) {
+      console.log(1);
+      createLights(spinnerScene);
+      counter++;
+    }
 
     // Load the GLTF model
     const loader = new GLTFLoader();
     loader.load(
-      "/fidgetSpinner/scene.gltf",
+      "/fidget_spinner_animation/scene.gltf",
       (gltf) => {
         // Add the loaded model to the spinnerScene
         spinnerScene.add(gltf.scene);
@@ -220,7 +225,7 @@ const Model3D = () => {
       controls.update();
 
       // Render the skyScene using the skyCamera
-      // renderer.render(skyScene, skyCamera);
+      renderer.render(skyScene, skyCamera);
 
       skyCamera.rotation.y += skyCameraRotationSpeed;
       skyCamera.rotation.x += skyCameraRotationSpeed / 2;
@@ -249,7 +254,7 @@ const Model3D = () => {
     if (
       // this apparently necessary or else updating state doesnt work
       parseFloat(spinSpeed) > parseFloat(topSpinSpeed) &&
-      !(spinSpeed > 400)
+      !(spinSpeed > 999)
     ) {
       setTopSpinSpeed(spinSpeed);
     }
