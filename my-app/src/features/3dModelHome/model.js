@@ -23,6 +23,7 @@ const Model3D = () => {
   const spinTimeRef = useRef(0);
   const spinSpeedRef = useRef(0);
   const topSpinSpeedRef = useRef(0);
+  const [showPopup, setShowPopup] = useState(false);
 
   // ...
 
@@ -290,17 +291,47 @@ const Model3D = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => setShowPopup(true), 500); // Show the popup 1 second after the loading is finished
+    }
+  }, [isLoading]);
+
   return (
     <div className="parent">
       <div className={isLoading ? "loading" : "hide"}>
-        <span>The Only Stress Relief App You Will Ever Need</span>
+        <h1 id="title">The Only Stress Relief App You Will Ever Need</h1>
         <LoadingScreen />
       </div>
-      <div className={isLoading ? "hide" : "content"}>
-        <h1>Stress Relief Whereever Whenever</h1>
-        <div>Stress Relief Time Today: {spinTime} seconds </div>
-        <div>Current Spin Speed: {spinSpeed}</div>
-        <div>Top Spin Speed Today: {topSpinSpeed}</div>
+      <div>
+        {showPopup && (
+          <div className="popup">
+            <p>
+              Welcome to the only <strong>Stress Relief App</strong> you will
+              ever need.
+              <br></br>
+              <em>Give it a spin</em> to relieve some stress!
+              <br></br>
+              Also please turn off your Ad Block so we can make some dough from
+              Ads {":)"}
+            </p>
+            <button onClick={() => setShowPopup(false)}>Close</button>
+          </div>
+        )}
+      </div>
+      <div className={!isLoading ? "loading model-container" : "hide"}>
+        <div className="model-info">
+          <div id="title">Stress Relief Whenever Whereever</div>
+          <div className="spin-time">
+            Stress Relief Time Today: <span>{spinTime}</span> seconds
+          </div>
+          <div className="spin-speed">
+            Current Spin Speed: <span>{spinSpeed}</span>
+          </div>
+          <div className="top-spin-speed">
+            Top Spin Speed Today: <span>{topSpinSpeed}</span>
+          </div>
+        </div>
         <div ref={containerRef} />
       </div>
     </div>

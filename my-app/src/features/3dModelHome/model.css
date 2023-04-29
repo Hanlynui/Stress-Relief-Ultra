@@ -1,45 +1,127 @@
 * {
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
   background-color: #191f26;
   color: white;
 }
 
-/* CSS */
 .parent {
-  margin-top: 1rem;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 100vh;
 }
 
 .loading {
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
   font-size: 24px;
-  font-weight: bold;
-  color: #333;
-}
-
-span {
-  margin-top: 10rem;
+  text-align: center;
 }
 
 .hide {
   display: none;
 }
 
-.content {
+.model-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.model-info {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Additional CSS for customization */
+.model-info div {
+  background-color: rgba(25, 31, 38, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+#title {
+  color: antiquewhite;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.spin-time span,
+.spin-speed span,
+.top-spin-speed span {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  color: #00ff00; /* You can choose any color */
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 24px;
+}
+
+.popup h2 {
+  color: black;
+  margin: 0;
+  margin-bottom: 1rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #333;
+}
+
+.popup p {
+  color: black;
+  margin: 0;
+  margin-bottom: 2rem;
+  font-size: 1.2rem;
+}
+
+.popup button {
+  font-family: "Roboto", sans-serif;
+  background-color: #007bff;
+  color: black;
+  border: none;
+  padding: 0.75rem 2.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 1.1rem;
+}
+
+.popup button:hover {
+  background-color: #0056b3;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.popup button:focus {
+  outline: none;
 }
