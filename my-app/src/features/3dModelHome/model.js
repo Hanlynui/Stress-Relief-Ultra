@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -7,12 +7,18 @@ import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
 const Model3D = () => {
   // Create a reference to the container element in the DOM
   const containerRef = useRef();
+  const [spinTime, setSpinTime] = useState(0);
+  const [spinSpeed, setSpinSpeed] = useState(0);
+  const [topSpinSpeed, setTopSpinSpeed] = useState(0);
+  const spinTimeRef = useRef(0);
+  const topSpinSpeedRef = useRef(0);
 
   // This effect runs once when the component mounts
   useEffect(() => {
     // Create a new spinnerScene
     const skyScene = new THREE.Scene();
     const spinnerScene = new THREE.Scene();
+    const clock = new THREE.Clock();
 
     // set up camera
     const camera = new THREE.PerspectiveCamera(30, 1, 1, 100);
@@ -31,15 +37,15 @@ const Model3D = () => {
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
 
-    const exrLoader = new EXRLoader();
-    exrLoader.load("/skymap.exr", (texture) => {
-      const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-      skyScene.background = envMap;
-      spinnerScene.environment = envMap;
+    // const exrLoader = new EXRLoader();
+    // exrLoader.load("/skymap.exr", (texture) => {
+    //   const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+    //   skyScene.background = envMap;
+    //   spinnerScene.environment = envMap;
 
-      texture.dispose();
-      pmremGenerator.dispose();
-    });
+    //   texture.dispose();
+    //   pmremGenerator.dispose();
+    // });
 
     // Add ambient light to the spinnerScene
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -56,22 +62,22 @@ const Model3D = () => {
     spinnerScene.add(bottomDirectionalLight);
 
     // Left directional light
-    const leftDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const leftDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     leftDirectionalLight.position.set(-1, 0, 0);
     spinnerScene.add(leftDirectionalLight);
 
     // Right directional light
-    const rightDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const rightDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     rightDirectionalLight.position.set(1, 0, 0);
     spinnerScene.add(rightDirectionalLight);
 
     // Front directional light
-    const frontDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const frontDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     frontDirectionalLight.position.set(0, 0, 1);
     spinnerScene.add(frontDirectionalLight);
 
     // Back directional light
-    const backDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const backDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     backDirectionalLight.position.set(0, 0, -1);
     spinnerScene.add(backDirectionalLight);
 
@@ -92,6 +98,7 @@ const Model3D = () => {
         console.error("An error happened", error);
       }
     );
+
     const skyCameraRotationSpeed = 0.0001;
     // Add OrbitControls for user interaction with the model
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -148,6 +155,31 @@ const Model3D = () => {
       isMouseDown = false;
     });
 
+    function adjustVelocity(velocity) {
+      const speed = velocity.length();
+      const spinSpeedThreshold = 0.01;
+
+      let decayFactor;
+      // console.log(speed);
+      if (speed > 1.5) {
+        decayFactor = 0.996;
+      } else if (speed <= 1.5) {
+        decayFactor = 0.5;
+      }
+
+      // Apply the decay factor to the velocity
+      velocity.multiplyScalar(decayFactor);
+
+      // Set the velocity to zero when the speed is less than a small threshold value
+      if (speed < 0.01) {
+        velocity.set(0, 0);
+      }
+
+      // Return true if the spin speed is greater than the threshold, false otherwise
+      return speed > spinSpeedThreshold;
+    }
+
+    let spinDuration = 0;
     // Define the animation loop
     const animate = () => {
       requestAnimationFrame(animate);
@@ -156,22 +188,38 @@ const Model3D = () => {
         (child) => child.type === "Group"
       );
 
-      if (model) {
+      const delta = clock.getDelta(); // Get the time since the last frame
+
+      // Call the adjustVelocity function and get whether the spin speed is greater than the threshold
+      const isSpinning = adjustVelocity(velocity);
+
+      setSpinSpeed(velocity.length().toFixed(3));
+
+      if (model && isSpinning) {
         model.rotation.y += velocity.x * 0.001;
         model.rotation.x += velocity.y * 0.001;
       }
 
-      // Reduce the velocity over time
-      velocity.multiplyScalar(0.999);
+      // Update the spin duration only when isSpinning is true
+      if (isSpinning) {
+        spinDuration += delta;
 
+        // Update the spinTimeRef value
+        spinTimeRef.current = spinDuration;
+
+        // Update the spinTime state only when the difference is greater than the threshold
+        if (Math.abs(spinTime - spinTimeRef.current) >= 0.1) {
+          setSpinTime(spinTimeRef.current.toFixed(1));
+        }
+      }
       // Update the controls
       controls.update();
 
       // Render the skyScene using the skyCamera
-      renderer.render(skyScene, skyCamera);
+      // renderer.render(skyScene, skyCamera);
 
       skyCamera.rotation.y += skyCameraRotationSpeed;
-      skyCamera.rotation.x += skyCameraRotationSpeed;
+      skyCamera.rotation.x += skyCameraRotationSpeed / 2;
 
       // Render the spinnerScene using the model camera on top of the skyScene
       renderer.autoClear = false;
@@ -196,9 +244,14 @@ const Model3D = () => {
   return (
     <div>
       <h1>My 3D Model</h1>
+      <div>Total Spin Time Spent Spinning Today: {spinTime} seconds </div>
+      <div>Current Spin Speed: {spinSpeed}</div>
+      <div>Top Spin Speed Today: {topSpinSpeed}</div>
       <div ref={containerRef} />
     </div>
   );
 };
 
 export default Model3D;
+
+//todo make sure that it works for all devices and reduce the loading time
