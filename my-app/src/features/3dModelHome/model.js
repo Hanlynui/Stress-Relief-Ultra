@@ -10,6 +10,8 @@ import {
   RGBAFormat,
   DataTexture,
 } from "three";
+import LoadingScreen from "../loading";
+import "./model.css";
 
 const Model3D = () => {
   // Create a reference to the container element in the DOM
@@ -17,7 +19,10 @@ const Model3D = () => {
   const [spinTime, setSpinTime] = useState(0);
   const [spinSpeed, setSpinSpeed] = useState(0);
   const [topSpinSpeed, setTopSpinSpeed] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const spinTimeRef = useRef(0);
+  const spinSpeedRef = useRef(0);
+  const topSpinSpeedRef = useRef(0);
 
   // ...
 
@@ -54,6 +59,7 @@ const Model3D = () => {
 
       texture.dispose();
       pmremGenerator.dispose();
+      setIsLoading(false);
     });
 
     const createLights = (spinnerScene) => {
@@ -201,6 +207,16 @@ const Model3D = () => {
 
       setSpinSpeed(velocity.length().toFixed(3));
 
+      spinSpeedRef.current = velocity.length().toFixed(3);
+
+      if (
+        parseFloat(spinSpeedRef.current) >
+          parseFloat(topSpinSpeedRef.current) &&
+        !(spinSpeedRef.current > 999)
+      ) {
+        topSpinSpeedRef.current = spinSpeedRef.current;
+      }
+
       // console.log(spinSpeed);
 
       if (model && isSpinning) {
@@ -244,7 +260,10 @@ const Model3D = () => {
 
     // Clean up the renderer when the component is unmounted
     return () => {
-      if (containerRef.current) {
+      if (
+        containerRef.current &&
+        containerRef.current.contains(renderer.domElement)
+      ) {
         containerRef.current.removeChild(renderer.domElement);
       }
     };
@@ -260,17 +279,34 @@ const Model3D = () => {
     }
   }, [spinSpeed, topSpinSpeed]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSpinSpeed(spinSpeedRef.current);
+      setTopSpinSpeed(topSpinSpeedRef.current);
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
-    <div>
-      <h1>My 3D Model</h1>
-      <div>Stress Relief Time Today: {spinTime} seconds </div>
-      <div>Current Spin Speed: {spinSpeed}</div>
-      <div>Top Spin Speed Today: {topSpinSpeed}</div>
-      <div ref={containerRef} />
+    <div className="parent">
+      <div className={isLoading ? "loading" : "hide"}>
+        <span>The Only Stress Relief App You Will Ever Need</span>
+        <LoadingScreen />
+      </div>
+      <div className={isLoading ? "hide" : "content"}>
+        <h1>Stress Relief Whereever Whenever</h1>
+        <div>Stress Relief Time Today: {spinTime} seconds </div>
+        <div>Current Spin Speed: {spinSpeed}</div>
+        <div>Top Spin Speed Today: {topSpinSpeed}</div>
+        <div ref={containerRef} />
+      </div>
     </div>
   );
 };
 
 export default Model3D;
 
-//todo make sure that it works for all devices and reduce the loading time
+//todo make sure that it works for all devices and reduce the loading time maybe save to local storage or cache, afterwards create a loading screen that loads for 10 seconds? or something ? a cute one, then css for the model
