@@ -49,24 +49,25 @@ const Model3D = () => {
     );
 
     // Create the renderer and set its size
-    const isHighPerformanceDevice = window.devicePixelRatio <= 1.5;
+    const isHighPerformanceDevice = window.devicePixelRatio <= 2;
     const renderer = new THREE.WebGLRenderer({
       antialias: isHighPerformanceDevice,
     });
+
+    renderer.setSize(sizes.width, sizes.height);
     //set pixel ratio so that it looks better
-    renderer.setPixelRatio(2);
+    renderer.setPixelRatio(
+      isHighPerformanceDevice ? window.devicePixelRatio : 1
+    );
 
     //todo
     window.addEventListener("resize", () => {
-      const resizeTimeout = setTimeout(() => {
-        sizes.width = window.innerWidth;
-        sizes.height = window.innerHeight;
-        camera.updateProjectionMatrix();
-        camera.aspect = sizes.width / sizes.height;
-        skyCamera.aspect = sizes.width / sizes.height;
-        renderer.setSize(sizes.width, sizes.height);
-      }, 200);
-      clearTimeout(resizeTimeout);
+      sizes.width = window.innerWidth;
+      sizes.height = window.innerHeight;
+      camera.updateProjectionMatrix();
+      camera.aspect = sizes.width / sizes.height;
+      skyCamera.aspect = sizes.width / sizes.height;
+      renderer.setSize(sizes.width, sizes.height);
     });
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -142,12 +143,10 @@ const Model3D = () => {
     let prevMousePosition = { x: 0, y: 0 };
     let curMousePosition = { x: 0, y: 0 };
     let isMouseDown = false;
+    let touch = false;
+    let speedFactor = 1;
 
-    renderer.domElement.addEventListener("mousedown", () => {
-      isMouseDown = true;
-    });
-
-    renderer.domElement.addEventListener("mousemove", (event) => {
+    function handleMovement(event) {
       if (isMouseDown) {
         prevMousePosition.x = curMousePosition.x;
         prevMousePosition.y = curMousePosition.y;
@@ -155,36 +154,40 @@ const Model3D = () => {
         curMousePosition.x = event.clientX;
         curMousePosition.y = event.clientY;
 
-        velocity.x = curMousePosition.x - prevMousePosition.x;
-        velocity.y = curMousePosition.y - prevMousePosition.y;
+        velocity.x = (curMousePosition.x - prevMousePosition.x) * speedFactor;
+        velocity.y = (curMousePosition.y - prevMousePosition.y) * speedFactor;
       }
-    });
-
-    renderer.domElement.addEventListener("touchmove", (event) => {
-      if (isMouseDown) {
-        prevMousePosition.x = curMousePosition.x;
-        prevMousePosition.y = curMousePosition.y;
-
-        curMousePosition.x = event.touches[0].clientX;
-        curMousePosition.y = event.touches[0].clientY;
-
-        velocity.x = curMousePosition.x - prevMousePosition.x;
-        velocity.y = curMousePosition.y - prevMousePosition.y;
-      }
-      event.preventDefault();
-    });
-
-    renderer.domElement.addEventListener("mouseup", () => {
+    }
+    function handleMouseEnd() {
       isMouseDown = false;
-    });
+    }
 
-    renderer.domElement.addEventListener("touchstart", () => {
+    renderer.domElement.addEventListener("mousedown", () => {
       isMouseDown = true;
     });
 
-    renderer.domElement.addEventListener("touchend", () => {
-      isMouseDown = false;
+    renderer.domElement.addEventListener("mouseup", handleMouseEnd);
+    renderer.domElement.addEventListener("mouseleave", handleMouseEnd);
+
+    renderer.domElement.addEventListener("mousemove", (event) => {
+      if (touch) return;
+      handleMovement(event);
     });
+
+    renderer.domElement.addEventListener("touchstart", (event) => {
+      isMouseDown = true;
+      touch = true;
+      speedFactor = 2;
+    });
+
+    renderer.domElement.addEventListener("touchend", handleMouseEnd);
+    renderer.domElement.addEventListener("touchcancel", handleMouseEnd);
+
+    renderer.domElement.addEventListener("touchmove", (event) => {
+      handleMovement(event.touches[0]);
+      event.preventDefault();
+    });
+
     // const spinningSound = new Audio("/spinning-fidget-spinner-23292.mp3");
 
     function adjustVelocity(velocity) {
@@ -286,8 +289,8 @@ const Model3D = () => {
       // Render the skyScene using the skyCamera
       renderer.render(skyScene, skyCamera);
 
-      skyCamera.rotation.y += skyCameraRotationSpeed;
-      skyCamera.rotation.x += skyCameraRotationSpeed / 2;
+      skyCamera.rotation.y -= skyCameraRotationSpeed;
+      // skyCamera.rotation.x += skyCameraRotationSpeed / 2;
 
       // Render the spinnerScene using the model camera on top of the skyScene
       renderer.autoClear = false;
@@ -358,8 +361,12 @@ const Model3D = () => {
   return (
     <div className="parent">
       <div className={isLoading ? "loading" : "hide"}>
-        <h1 id="title">The Only Stress Relief App You Will Ever Need</h1>
-        <div>First Time Loading May Take a While...</div>
+        <h1 className="title main">
+          <strong>The Only Stress Relief App You Will Ever Need</strong>
+        </h1>
+        <div className="under-title">
+          First Time Loading May Take a While...
+        </div>
         <LoadingScreen />
       </div>
       <div>
@@ -387,7 +394,7 @@ const Model3D = () => {
       </div>
       <div className={!isLoading ? "loading model-container" : "hide"}>
         <div className="model-info">
-          <div id="title">Stress Relief Whenever Whereever</div>
+          <div className="title main">Stress Relief Whenever Whereever</div>
           <div className="spin-time">
             Stress Relief Time Today: <span>{spinTime}</span> seconds
           </div>
