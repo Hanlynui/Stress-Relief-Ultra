@@ -34,21 +34,41 @@ const Model3D = () => {
     const skyScene = new THREE.Scene();
     const spinnerScene = new THREE.Scene();
     const clock = new THREE.Clock();
-
+    const sizes = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
     // set up camera
-    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      40,
+      sizes.width / sizes.height,
+      0.1,
+      1000
+    );
     camera.position.z = 3;
     // spinnerScene.add(camera);
 
-    const skyCamera = new THREE.PerspectiveCamera(100, 1, 0.1, 1000);
+    const skyCamera = new THREE.PerspectiveCamera(
+      100,
+      sizes.width / sizes.height,
+      0.1,
+      1000
+    );
 
     // Create the renderer and set its size
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(sizes.width, sizes.height);
     //set pixel ratio so that it looks better
     renderer.setPixelRatio(2);
 
     //todo
+    window.addEventListener("resize", () => {
+      sizes.width = window.innerWidth;
+      sizes.height = window.innerHeight;
+      camera.aspect = sizes.width / sizes.height;
+      skyCamera.aspect = sizes.width / sizes.height;
+      renderer.setSize(sizes.width, sizes.height);
+    });
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
 
@@ -296,6 +316,12 @@ const Model3D = () => {
       setTimeout(() => setShowPopup(true), 500); // Show the popup 1 second after the loading is finished
     }
   }, [isLoading]);
+
+  const [showStats, setShowStats] = useState(false);
+
+  const toggleStats = () => {
+    setShowStats(!showStats);
+  };
 
   return (
     <div className="parent">
