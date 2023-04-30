@@ -1,4 +1,4 @@
-Han's Stackathon project
+The Only Stress Relief App You Will Ever Need
 
 For when you are working and just need something to relieve stress quickly.
 
