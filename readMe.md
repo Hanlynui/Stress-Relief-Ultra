@@ -2,7 +2,7 @@ The Only Stress Relief App You Will Ever Need
 
 For when you are working and just need something to relieve stress quickly.
 
-Link to our 3D Fidget Spinner Website: https://3d-fidget-spinner.com
+Link to my 3D Fidget Spinner Website: https://3d-fidget-spinner.com
 
 Link to fun Demo Video I did for class: https://www.youtube.com/watch?v=v_4-PLvJrKE
 
