@@ -317,16 +317,6 @@ const Model3D = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      // this apparently necessary or else updating state doesnt work
-      parseFloat(spinSpeed) > parseFloat(topSpinSpeed) &&
-      !(spinSpeed > 9999)
-    ) {
-      setTopSpinSpeed(spinSpeed);
-    }
-  }, [spinSpeed, topSpinSpeed]);
-
-  useEffect(() => {
     const interval = setInterval(() => {
       setSpinSpeed(spinSpeedRef.current);
       setTopSpinSpeed(topSpinSpeedRef.current);
