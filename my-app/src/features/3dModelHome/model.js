@@ -3,13 +3,6 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
-import {
-  Color,
-  CubeTexture,
-  LinearFilter,
-  RGBAFormat,
-  DataTexture,
-} from "three";
 import LoadingScreen from "../loading";
 import "./model.css";
 
@@ -40,7 +33,7 @@ const Model3D = () => {
     };
     // set up camera
     const camera = new THREE.PerspectiveCamera(
-      40,
+      30,
       sizes.width / sizes.height,
       0.1,
       1000
@@ -75,7 +68,7 @@ const Model3D = () => {
     pmremGenerator.compileEquirectangularShader();
 
     const exrLoader = new EXRLoader();
-    exrLoader.load("/skymap.exr", (texture) => {
+    exrLoader.load("/secluded_beach_4k.exr", (texture) => {
       const envMap = pmremGenerator.fromEquirectangular(texture).texture;
       skyScene.background = envMap;
       spinnerScene.environment = envMap;
