@@ -65,10 +65,12 @@ const Model3D = () => {
     window.addEventListener("resize", () => {
       sizes.width = window.innerWidth;
       sizes.height = window.innerHeight;
+      camera.updateProjectionMatrix();
       camera.aspect = sizes.width / sizes.height;
       skyCamera.aspect = sizes.width / sizes.height;
       renderer.setSize(sizes.width, sizes.height);
     });
+
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
 
@@ -224,8 +226,6 @@ const Model3D = () => {
       // Call the adjustVelocity function and get whether the spin speed is greater than the threshold
       const isSpinning = adjustVelocity(velocity);
 
-      //todo bug here why is it constantly changing when spin speed changes? its not saving into topspinspeed
-
       setSpinSpeed(velocity.length().toFixed(3));
 
       spinSpeedRef.current = velocity.length().toFixed(3);
@@ -261,6 +261,10 @@ const Model3D = () => {
       // Update the controls
       controls.update();
 
+      const loop = () => {
+        window.requestAnimationFrame(loop);
+      };
+      loop();
       // Render the skyScene using the skyCamera
       renderer.render(skyScene, skyCamera);
 
@@ -269,6 +273,7 @@ const Model3D = () => {
 
       // Render the spinnerScene using the model camera on top of the skyScene
       renderer.autoClear = false;
+
       renderer.render(spinnerScene, camera);
       renderer.autoClear = true;
     };
@@ -319,10 +324,6 @@ const Model3D = () => {
 
   const [showStats, setShowStats] = useState(false);
 
-  const toggleStats = () => {
-    setShowStats(!showStats);
-  };
-
   return (
     <div className="parent">
       <div className={isLoading ? "loading" : "hide"}>
@@ -366,4 +367,4 @@ const Model3D = () => {
 
 export default Model3D;
 
-//todo make sure that it works for all devices and reduce the loading time maybe save to local storage or cache, afterwards create a loading screen that loads for 10 seconds? or something ? a cute one, then css for the model
+//todo make sure that it works for all devices and reduce the loading time maybe save to local storage or cache

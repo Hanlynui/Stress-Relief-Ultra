@@ -61,6 +61,8 @@ body {
   font-weight: 700;
   font-size: 2rem;
   text-align: center;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .spin-time span,
@@ -124,4 +126,11 @@ body {
 
 .popup button:focus {
   outline: none;
+}
+
+@media only screen and (max-width: 768px) {
+  h1#title {
+    font-size: 1.2rem;
+    line-height: 2rem;
+  }
 }
