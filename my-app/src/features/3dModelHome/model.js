@@ -177,7 +177,7 @@ const Model3D = () => {
     renderer.domElement.addEventListener("touchstart", (event) => {
       isMouseDown = true;
       touch = true;
-      speedFactor = 2;
+      speedFactor = 2.5;
     });
 
     renderer.domElement.addEventListener("touchend", handleMouseEnd);
