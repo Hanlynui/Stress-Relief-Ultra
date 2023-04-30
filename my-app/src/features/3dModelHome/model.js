@@ -188,28 +188,53 @@ const Model3D = () => {
       isMouseDown = false;
     });
 
+    // const spinningSound = new Audio("/spinning-fidget-spinner-23292.mp3");
+
     function adjustVelocity(velocity) {
       const speed = velocity.length();
       const spinSpeedThreshold = 0.01;
 
+      // const handleSpinSound = () => {
+      //   if (spinningSound.paused) {
+      //     spinningSound.play();
+      //   }
+
+      //   const maxPlaybackRate = 1;
+      //   const minPlaybackRate = 0.25;
+
+      //   const playbackRate = Math.max(
+      //     minPlaybackRate,
+      //     Math.min(maxPlaybackRate, speed / 500)
+      //   );
+
+      //   spinningSound.playbackRate = playbackRate;
+      // };
+
+      // Adjust the decay factor
       let decayFactor;
-      // console.log(speed);
       if (speed > 1.5) {
-        decayFactor = 0.996;
+        decayFactor = 0.995; // Increase the decay factor slightly for faster spins
       } else if (speed <= 1.5) {
-        decayFactor = 0.5;
+        decayFactor = 0.5; // Increase the decay factor slightly for slower spins
       }
 
       // Apply the decay factor to the velocity
       velocity.multiplyScalar(decayFactor);
 
-      // Set the velocity to zero when the speed is less than a small threshold value
       if (speed < 0.01) {
         velocity.set(0, 0);
+        // spinningSound.pause();
+        // spinningSound.currentTime = 0;
       }
 
       // Return true if the spin speed is greater than the threshold, false otherwise
-      return speed > spinSpeedThreshold;
+      else if (speed > spinSpeedThreshold) {
+        // If so, play the spin sound with the new speed
+        // handleSpinSound(speed);
+        return true;
+      } else {
+        return false;
+      }
     }
 
     let spinDuration = 0;
