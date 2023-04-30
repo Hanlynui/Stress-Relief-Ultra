@@ -49,19 +49,24 @@ const Model3D = () => {
     );
 
     // Create the renderer and set its size
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(sizes.width, sizes.height);
+    const isHighPerformanceDevice = window.devicePixelRatio <= 1.5;
+    const renderer = new THREE.WebGLRenderer({
+      antialias: isHighPerformanceDevice,
+    });
     //set pixel ratio so that it looks better
     renderer.setPixelRatio(2);
 
     //todo
     window.addEventListener("resize", () => {
-      sizes.width = window.innerWidth;
-      sizes.height = window.innerHeight;
-      camera.updateProjectionMatrix();
-      camera.aspect = sizes.width / sizes.height;
-      skyCamera.aspect = sizes.width / sizes.height;
-      renderer.setSize(sizes.width, sizes.height);
+      const resizeTimeout = setTimeout(() => {
+        sizes.width = window.innerWidth;
+        sizes.height = window.innerHeight;
+        camera.updateProjectionMatrix();
+        camera.aspect = sizes.width / sizes.height;
+        skyCamera.aspect = sizes.width / sizes.height;
+        renderer.setSize(sizes.width, sizes.height);
+      }, 200);
+      clearTimeout(resizeTimeout);
     });
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -180,7 +185,6 @@ const Model3D = () => {
     renderer.domElement.addEventListener("touchend", () => {
       isMouseDown = false;
     });
-
     // const spinningSound = new Audio("/spinning-fidget-spinner-23292.mp3");
 
     function adjustVelocity(velocity) {
@@ -205,16 +209,16 @@ const Model3D = () => {
 
       // Adjust the decay factor
       let decayFactor;
-      if (speed > 1.5) {
-        decayFactor = 0.995; // Increase the decay factor slightly for faster spins
-      } else if (speed <= 1.5) {
-        decayFactor = 0.5; // Increase the decay factor slightly for slower spins
+      if (speed > 50) {
+        decayFactor = 0.998; // Increase the decay factor slightly for faster spins
+      } else if (speed <= 50) {
+        decayFactor = 0.9; // Increase the decay factor slightly for slower spins
       }
 
       // Apply the decay factor to the velocity
       velocity.multiplyScalar(decayFactor);
 
-      if (speed < 0.01) {
+      if (speed < 1) {
         velocity.set(0, 0);
         // spinningSound.pause();
         // spinningSound.currentTime = 0;
@@ -279,10 +283,6 @@ const Model3D = () => {
       // Update the controls
       controls.update();
 
-      const loop = () => {
-        window.requestAnimationFrame(loop);
-      };
-      loop();
       // Render the skyScene using the skyCamera
       renderer.render(skyScene, skyCamera);
 
@@ -317,7 +317,7 @@ const Model3D = () => {
     if (
       // this apparently necessary or else updating state doesnt work
       parseFloat(spinSpeed) > parseFloat(topSpinSpeed) &&
-      !(spinSpeed > 999)
+      !(spinSpeed > 9999)
     ) {
       setTopSpinSpeed(spinSpeed);
     }
@@ -359,6 +359,7 @@ const Model3D = () => {
     <div className="parent">
       <div className={isLoading ? "loading" : "hide"}>
         <h1 id="title">The Only Stress Relief App You Will Ever Need</h1>
+        <div>First Time Loading May Take a While...</div>
         <LoadingScreen />
       </div>
       <div>
