@@ -413,4 +413,4 @@ const Model3D = () => {
 
 export default Model3D;
 
-//todo make sure that it works for all devices and reduce the loading time maybe save to local storage or cache
+//todo reduce the loading time maybe save to local storage or cache

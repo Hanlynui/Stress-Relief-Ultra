@@ -1,5 +1,5 @@
 import React from "react";
-import loadingGif from "./loading-2.gif";
+import loadingVideo from "./waiting.mp4";
 
 const LoadingScreen = () => {
   return (
@@ -11,7 +11,19 @@ const LoadingScreen = () => {
         height: "100vh",
       }}
     >
-      <img src={loadingGif} alt="Loading..." />
+      <video
+        src={loadingVideo}
+        style={{
+          borderRadius: "2rem",
+          width: "100%",
+          maxWidth: "640px",
+          height: "auto",
+        }}
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
     </div>
   );
 };
