@@ -341,13 +341,26 @@ const Model3D = () => {
     };
   }, []);
 
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [BGM, setBGM] = useState(null);
+
   useEffect(() => {
-    if (!isLoading) {
+    setBGM(new Audio("/Heart-Of-The-Ocean.mp3"));
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && BGM) {
       setTimeout(() => setShowPopup(true), 500); // Show the popup 1 second after the loading is finished
     }
-  }, [isLoading]);
+  }, [isLoading, BGM]);
 
-  const [showStats, setShowStats] = useState(false);
+  useEffect(() => {
+    if (BGM && userHasInteracted) {
+      BGM.play();
+      BGM.autoplay = true;
+      BGM.loop = true;
+    }
+  }, [BGM, userHasInteracted]);
 
   return (
     <div className="parent">
@@ -367,7 +380,14 @@ const Model3D = () => {
               Also please turn off your Ad Block so we can make some dough from
               Ads {":)"}
             </p>
-            <button onClick={() => setShowPopup(false)}>Close</button>
+            <button
+              onClick={() => {
+                setShowPopup(false);
+                setUserHasInteracted(true);
+              }}
+            >
+              Close
+            </button>
           </div>
         )}
       </div>
