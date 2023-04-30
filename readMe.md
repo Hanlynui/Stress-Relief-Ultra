@@ -6,3 +6,7 @@ Fidget spinner model from: (https://sketchfab.com/3d-models/fidget-spinner-anima
 
 Sky background HDRMap from: https://hdrmaps.com/altewalde-sky-dome/
 The Only Stress Relief App You Will Ever Need
+
+Secluded Beach HDRI from https://polyhaven.com/a/secluded_beach
+
+Soundtrack from: https://www.chosic.com/download-audio/29976/

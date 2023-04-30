@@ -94,7 +94,7 @@ const Model3D = () => {
       }
 
       pointLightPositions.forEach((position) => {
-        const pointLight = new THREE.PointLight(0xffffff, 0.2);
+        const pointLight = new THREE.PointLight(0xffffff, 0.35);
         pointLight.position.copy(position);
         spinnerScene.add(pointLight);
       });
